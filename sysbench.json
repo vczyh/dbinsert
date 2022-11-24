@@ -1,0 +1,19 @@
+[
+    {
+        "database": "zyh_db9",
+        "table": "sbtest",
+        "size": 1000000,
+        "primaryKeyFieldNames": ["id"],
+        "fields": [
+            {
+                "name": "id",
+                "type": "INT",
+                "autoIncrement": true
+            },
+            {
+                "name": "val",
+                "type": "char(110)"
+            }
+        ]
+    }
+]
