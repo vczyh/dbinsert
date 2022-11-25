@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"context"
 	"github.com/spf13/cobra"
-	"github.com/vczyh/dbinsert/mysql"
 	"github.com/vczyh/dbinsert/relational"
 	"time"
 )
@@ -23,9 +23,7 @@ to quickly create a Cobra application.`,
 }
 
 var (
-	definitionFile string
-	databaseRepeat int
-	mysqlCnf       = new(mysql.Config)
+	mysqlCnf = new(relational.MysqlConfig)
 )
 
 func init() {
@@ -45,30 +43,18 @@ func init() {
 	mysqlCmd.Flags().IntVar(&mysqlCnf.Port, "port", 3306, "mysql port")
 	mysqlCmd.Flags().StringVar(&mysqlCnf.Username, "username", "", "mysql username")
 	mysqlCmd.Flags().StringVar(&mysqlCnf.Password, "password", "", "mysql password")
-	//mysqlCmd.Flags().StringVar(&mysqlCnf.Database, "database", "", "mysql database")
 	mysqlCmd.Flags().BoolVar(&mysqlCnf.CreateDatabase, "create-database", false, "auto create database if not exist")
 	mysqlCmd.Flags().BoolVar(&mysqlCnf.CreateTable, "create-table", false, "auto create table if not exist")
-	//mysqlCmd.Flags().IntVarP(&mysqlCnf.TableSize, "table-size", "ts", 100, "table size")
 	mysqlCmd.Flags().DurationVar(&mysqlCnf.Timeout, "timeout", 10*time.Hour, "timeout")
-
-	mysqlCmd.Flags().StringVar(&definitionFile, "definition", "", "definition file path")
-	mysqlCmd.Flags().IntVar(&databaseRepeat, "db-repeat", 0, "number of times the database is repeatedly created")
+	rootCmd.PersistentFlags().IntVar(&mysqlCnf.TableSize, "table-size", 0, "table size")
+	mysqlCmd.Flags().IntVar(&mysqlCnf.DatabaseRepeat, "db-repeat", 0, "number of times the database is repeatedly created")
 }
 
 func StartMysql() error {
-	schema, err := relational.ParseSchemaFromFile(relational.DialectMysql, definitionFile, databaseRepeat)
+	mysqlCnf.SchemaFile = definitionFile
+	manager, err := relational.CreateManagerForMysql(mysqlCnf)
 	if err != nil {
 		return err
 	}
-	tables, err := relational.NewTables(schema)
-	if err != nil {
-		return err
-	}
-	mysqlCnf.Tables = tables
-
-	manager, err := mysql.NewManager(mysqlCnf)
-	if err != nil {
-		return err
-	}
-	return manager.Start()
+	return manager.Start(context.Background())
 }

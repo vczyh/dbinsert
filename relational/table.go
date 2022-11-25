@@ -30,6 +30,14 @@ type Table struct {
 	PrimaryKeyFieldNames []string
 }
 
+func NewTablesFromSchemaFile(dialect Dialect, file string, opts ...SchemaOption) ([]*Table, error) {
+	schema, err := ParseSchemaFromFile(dialect, file, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return NewTables(schema)
+}
+
 func NewTables(schema *Schema) (tables []*Table, err error) {
 	schemaTables := schema.Tables()
 

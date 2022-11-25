@@ -14,4 +14,6 @@ func NewInt8() *Int8 {
 
 func (g *Int8) Generate() interface{} {
 	return rand.Intn(math.MaxInt8)
+	// TODO
+	//return 10
 }

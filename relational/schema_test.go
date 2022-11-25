@@ -27,7 +27,7 @@ func TestGenerateSchema(t *testing.T) {
 		},
 	}
 
-	schema, err := NewSchema(DialectMysql, tables, 5)
+	schema, err := NewSchema(DialectMysql, tables, 5, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
