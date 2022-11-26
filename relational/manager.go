@@ -16,6 +16,7 @@ type Manager struct {
 	timeout            time.Duration
 	autoCreateDatabase bool
 	autoCreateTable    bool
+	progress           *Progress
 
 	db        *sql.DB
 	databases map[string][]*Table
@@ -39,6 +40,14 @@ func NewManager(cm ConnectionManager, bi BulkInserter, tables []*Table, opts ...
 		}
 	}
 
+	if m.progress == nil {
+		procress, err := NewProgress(m.tables)
+		if err != nil {
+			return nil, err
+		}
+		m.progress = procress
+	}
+
 	m.databases = make(map[string][]*Table)
 	for _, table := range m.tables {
 		m.databases[table.Database] = append(m.databases[table.Database], table)
@@ -55,6 +64,7 @@ func (m *Manager) Start(ctx context.Context) error {
 		return err
 	}
 
+	go m.progress.Render()
 	var wg sync.WaitGroup
 	for _, table := range m.tables {
 		wg.Add(1)
@@ -128,7 +138,7 @@ func (m *Manager) createTable(ctx context.Context) error {
 		}
 		for _, table := range tables {
 			// TODO
-			fmt.Println(table.DDL())
+			//fmt.Println(table.DDL())
 			_, err := db.ExecContext(ctx, table.DDL())
 			if err != nil {
 				return err
@@ -145,6 +155,7 @@ func (m *Manager) batchInsert(ctx context.Context, table *Table) error {
 	}
 
 	var rows []map[string]interface{}
+	//rowsSize := 0
 	for i := 0; i < table.Size; i++ {
 		row := make(map[string]interface{})
 		for _, field := range table.Fields {
@@ -155,25 +166,30 @@ func (m *Manager) batchInsert(ctx context.Context, table *Table) error {
 		rows = append(rows, row)
 		// TODO
 		if (i+1)%2500 == 0 {
+			//if rowsSize > 512*1024 {
 			if err := m.bi.Insert(ctx, db, table, rows); err != nil {
 				return err
 			}
+			m.progress.Increment(table, len(rows))
 			rows = nil
 		}
 	}
 	if len(rows) > 0 {
-		return m.bi.Insert(ctx, db, table, rows)
+		if err := m.bi.Insert(ctx, db, table, rows); err != nil {
+			return err
+		}
+		m.progress.Increment(table, len(rows))
 	}
 
 	return nil
 }
 
 func (m *Manager) close() {
+	m.progress.Stop()
 	m.db.Close()
 	m.dbs.Range(func(database, value interface{}) bool {
 		db := value.(*sql.DB)
 		db.Close()
-		m.dbs.Delete(db)
 		return true
 	})
 }
@@ -204,6 +220,10 @@ func (m *Manager) open(ctx context.Context, database string) (*sql.DB, error) {
 	//return db, nil
 
 	return m.cm.CreateInDatabase(ctx, database)
+}
+
+func (m *Manager) printProgress() {
+
 }
 
 func WithManagerTimeout(timeout time.Duration) ManagerOption {

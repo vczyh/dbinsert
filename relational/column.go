@@ -76,7 +76,6 @@ func NewField(name, typeName string, autoIncrement bool) (*Field, error) {
 func MustNewField(name, typeName string) *Field {
 	field, err := NewField(name, typeName, false)
 	if err != nil {
-		fmt.Println("FKKKKKKK")
 		panic(err)
 	}
 	return field

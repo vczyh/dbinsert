@@ -23,40 +23,6 @@ func ParseSchemaFromFile(dialect Dialect, file string, opts ...SchemaOption) (*S
 	return NewSchema(dialect, tables, opts...)
 }
 
-//func NewSchema(dialect Dialect, tables []*SchemaTable, dbRepeat, tableSize int) (*Schema, error) {
-//	s := &Schema{
-//		dialect: dialect,
-//	}
-//
-//	s.dbs = make(map[string][]*SchemaTable)
-//	for _, table := range tables {
-//		if tableSize != 0 {
-//			table.Size = tableSize
-//		}
-//		s.dbs[table.Database] = append(s.dbs[table.Database], table)
-//	}
-//
-//	if dbRepeat > 0 {
-//		newDbs := make(map[string][]*SchemaTable)
-//		for db, tables := range s.dbs {
-//			newDbs[db] = tables
-//			for i := 0; i < dbRepeat; i++ {
-//				newDb := fmt.Sprintf("%s_%d", db, i+1)
-//				var newTables []*SchemaTable
-//				for _, table := range tables {
-//					newTable := table.Clone()
-//					newTable.Database = newDb
-//					newTables = append(newTables, newTable)
-//				}
-//				newDbs[newDb] = newTables
-//			}
-//		}
-//		s.dbs = newDbs
-//	}
-//
-//	return s, nil
-//}
-
 func NewSchema(dialect Dialect, tables []*SchemaTable, opts ...SchemaOption) (*Schema, error) {
 	s := &Schema{
 		dialect:       dialect,
@@ -80,8 +46,8 @@ func NewSchema(dialect Dialect, tables []*SchemaTable, opts ...SchemaOption) (*S
 	if s.initDbRepeat > 0 {
 		newDbs := make(map[string][]*SchemaTable)
 		for db, tables := range s.dbs {
-			newDbs[db] = tables
-			for i := 0; i < s.initDbRepeat; i++ {
+			//newDbs[db] = tables
+			for i := 0; i < s.initDbRepeat+1; i++ {
 				newDb := fmt.Sprintf("%s_%d", db, i+1)
 				var newTables []*SchemaTable
 				for _, table := range tables {
@@ -110,25 +76,6 @@ func (s *Schema) Tables() []*SchemaTable {
 	}
 	return s.tables
 }
-
-//func (s *Schema) RepeatDatabases(dbRepeat int) {
-//	newDbs := make(map[string][]*SchemaTable)
-//	for db, tables := range s.dbs {
-//		newDbs[db] = tables
-//		for i := 0; i < dbRepeat; i++ {
-//			newDb := fmt.Sprintf("%s_%d", db, i+1)
-//			var newTables []*SchemaTable
-//			for _, table := range tables {
-//				newTable := table.Clone()
-//				newTable.Database = newDb
-//				newTables = append(newTables, newTable)
-//			}
-//			newDbs[newDb] = newTables
-//		}
-//	}
-//	s.dbs = newDbs
-//	s.tables = nil
-//}
 
 func (s *Schema) Databases() map[string][]*SchemaTable {
 	return s.dbs

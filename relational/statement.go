@@ -36,7 +36,7 @@ func (s *BatchInsertStmt) AddBatch() {
 func (s *BatchInsertStmt) ExecuteBatch(ctx context.Context, db *sql.DB) error {
 	batchSQL := s.batchSQL()
 	// TODO
-	fmt.Println(batchSQL[:100])
+	//fmt.Println(batchSQL[:100])
 	_, err := db.ExecContext(ctx, batchSQL)
 	return err
 }

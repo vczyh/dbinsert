@@ -103,19 +103,3 @@ func (t *Table) DDL() string {
 	fmt.Fprintln(sb, ")")
 	return sb.String()
 }
-
-//func (t *Table) DML() string {
-//	sb := new(strings.Builder)
-//
-//	var names, placeholders []string
-//	for _, column := range t.Columns {
-//		names = append(names, column.Name)
-//		placeholders = append(placeholders, "?")
-//	}
-//
-//	fmt.Fprintf(sb, "INSERT INTO %s", t.Name)
-//	fmt.Fprintf(sb, " ( %s )", strings.Join(names, ", "))
-//	fmt.Fprintf(sb, " VALUES ( %s )", strings.Join(placeholders, ", "))
-//
-//	return sb.String()
-//}
