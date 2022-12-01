@@ -9,7 +9,12 @@ import (
 	"time"
 )
 
+const (
+	bulkBuffer = 512 * 1024
+)
+
 type Manager struct {
+	dialect            Dialect
 	cm                 ConnectionManager
 	bi                 BulkInserter
 	tables             []*Table
@@ -24,8 +29,9 @@ type Manager struct {
 	err       error
 }
 
-func NewManager(cm ConnectionManager, bi BulkInserter, tables []*Table, opts ...ManagerOption) (*Manager, error) {
+func NewManager(dialect Dialect, cm ConnectionManager, bi BulkInserter, tables []*Table, opts ...ManagerOption) (*Manager, error) {
 	m := &Manager{
+		dialect:            dialect,
 		cm:                 cm,
 		bi:                 bi,
 		tables:             tables,
@@ -41,11 +47,11 @@ func NewManager(cm ConnectionManager, bi BulkInserter, tables []*Table, opts ...
 	}
 
 	if m.progress == nil {
-		procress, err := NewProgress(m.tables)
+		progress, err := NewProgress(m.tables)
 		if err != nil {
 			return nil, err
 		}
-		m.progress = procress
+		m.progress = progress
 	}
 
 	m.databases = make(map[string][]*Table)
@@ -57,6 +63,7 @@ func NewManager(cm ConnectionManager, bi BulkInserter, tables []*Table, opts ...
 }
 
 func (m *Manager) Start(ctx context.Context) error {
+	defer m.close()
 	ctx, cancelFunc := context.WithTimeout(ctx, m.timeout)
 	defer cancelFunc()
 
@@ -81,9 +88,15 @@ func (m *Manager) Start(ctx context.Context) error {
 		}(table)
 	}
 	wg.Wait()
-
-	m.close()
-	return m.err
+	if m.err != nil {
+		return m.err
+	}
+	for {
+		if m.progress.Ended() {
+			break
+		}
+	}
+	return nil
 }
 
 func (m *Manager) prepare(ctx context.Context) error {
@@ -122,12 +135,36 @@ func (m *Manager) prepare(ctx context.Context) error {
 
 func (m *Manager) createDatabases(ctx context.Context) error {
 	for database := range m.databases {
-		_, err := m.db.ExecContext(ctx, "CREATE DATABASE IF NOT EXISTS "+database)
-		if err != nil {
+		if err := m.createDatabase(ctx, database); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (m *Manager) createDatabase(ctx context.Context, name string) error {
+	switch m.dialect {
+	case DialectPostgres:
+		return m.createDatabaseForPostgres(ctx, name)
+	default:
+		_, err := m.db.ExecContext(ctx, "CREATE DATABASE IF NOT EXISTS "+name)
+		return err
+	}
+}
+
+func (m *Manager) createDatabaseForPostgres(ctx context.Context, name string) error {
+	s := fmt.Sprintf("SELECT COUNT(*) FROM pg_database WHERE datname = '%s'", name)
+	row := m.db.QueryRowContext(ctx, s)
+	var cnt int
+	if err := row.Scan(&cnt); err != nil {
+		return err
+	}
+	if cnt > 0 {
+		return nil
+	}
+
+	_, err := m.db.ExecContext(ctx, "CREATE DATABASE "+name)
+	return err
 }
 
 func (m *Manager) createTable(ctx context.Context) error {
@@ -137,11 +174,19 @@ func (m *Manager) createTable(ctx context.Context) error {
 			return err
 		}
 		for _, table := range tables {
-			// TODO
-			//fmt.Println(table.DDL())
-			_, err := db.ExecContext(ctx, table.DDL())
-			if err != nil {
-				return err
+			switch m.dialect {
+			case DialectMysql:
+				_, err := db.ExecContext(ctx, table.DDL())
+				if err != nil {
+					return err
+				}
+			case DialectPostgres:
+				_, err := db.ExecContext(ctx, table.PostgresDDL())
+				if err != nil {
+					return err
+				}
+			default:
+				return fmt.Errorf("unsupported dialect: %s", m.dialect)
 			}
 		}
 	}
@@ -155,23 +200,40 @@ func (m *Manager) batchInsert(ctx context.Context, table *Table) error {
 	}
 
 	var rows []map[string]interface{}
-	//rowsSize := 0
+	rowsSize := 0
 	for i := 0; i < table.Size; i++ {
 		row := make(map[string]interface{})
 		for _, field := range table.Fields {
 			if !field.AutoIncrement() {
-				row[field.Name] = field.GenerateData()
+				value := field.GenerateData()
+				row[field.Name] = value
+				switch v := value.(type) {
+				case int, uint:
+					rowsSize += 8
+				case int8, uint8:
+					rowsSize += 1
+				case int16, uint16:
+					rowsSize += 2
+				case int32, uint32:
+					rowsSize += 4
+				case int64, uint64:
+					rowsSize += 8
+				case []byte:
+					rowsSize += len(v)
+				case string:
+					rowsSize += len(v)
+				}
 			}
 		}
 		rows = append(rows, row)
-		// TODO
-		if (i+1)%2500 == 0 {
-			//if rowsSize > 512*1024 {
+		//if (i+1)%2500 == 0 {
+		if rowsSize > bulkBuffer {
 			if err := m.bi.Insert(ctx, db, table, rows); err != nil {
 				return err
 			}
 			m.progress.Increment(table, len(rows))
 			rows = nil
+			rowsSize = 0
 		}
 	}
 	if len(rows) > 0 {
@@ -203,27 +265,7 @@ func (m *Manager) GetDb(database string) (*sql.DB, error) {
 }
 
 func (m *Manager) open(ctx context.Context, database string) (*sql.DB, error) {
-	//dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
-	//	m.cnf.Username,
-	//	m.cnf.Password,
-	//	m.cnf.Host,
-	//	m.cnf.Port,
-	//	database)
-	//db, err := sql.Open("mysql", dsn)
-	//if err != nil {
-	//	return nil, err
-	//}
-	// See "Important settings" section.
-	//db.SetConnMaxLifetime(time.Minute * 3)
-	//db.SetMaxOpenConns(1)
-	//db.SetMaxIdleConns(10)
-	//return db, nil
-
 	return m.cm.CreateInDatabase(ctx, database)
-}
-
-func (m *Manager) printProgress() {
-
 }
 
 func WithManagerTimeout(timeout time.Duration) ManagerOption {

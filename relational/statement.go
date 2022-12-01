@@ -36,7 +36,7 @@ func (s *BatchInsertStmt) AddBatch() {
 func (s *BatchInsertStmt) ExecuteBatch(ctx context.Context, db *sql.DB) error {
 	batchSQL := s.batchSQL()
 	// TODO
-	//fmt.Println(batchSQL[:100])
+	//fmt.Println(batchSQL[:1200])
 	_, err := db.ExecContext(ctx, batchSQL)
 	return err
 }
@@ -68,7 +68,9 @@ func (s *BatchInsertStmt) batchSQL() string {
 			case int:
 				sb.WriteString(strconv.Itoa(v))
 			case string:
-				sb.WriteString(strconv.Quote(v))
+				sb.WriteString("'")
+				sb.WriteString(v)
+				sb.WriteString("'")
 			}
 			if i != len(row)-1 {
 				sb.WriteString(", ")

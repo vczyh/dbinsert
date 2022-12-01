@@ -28,6 +28,7 @@ func NewProgress(tables []*Table) (*Progress, error) {
 
 func (p *Progress) Render() {
 	pw := progress.NewWriter()
+	pw.SetAutoStop(true)
 	pw.SetSortBy(progress.SortByPercent)
 	pw.SetStyle(progress.StyleDefault)
 	pw.Style().Colors = progress.StyleColorsExample
@@ -76,4 +77,8 @@ func (p *Progress) Increment(table *Table, inc int) {
 	dbTracker := p.dbTrackers[table.Database]
 	//tabletTracker.Increment(int64(inc))
 	dbTracker.Increment(int64(inc))
+}
+
+func (p *Progress) Ended() bool {
+	return !p.pw.IsRenderInProgress()
 }

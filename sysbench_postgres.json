@@ -9,20 +9,19 @@
     "fields": [
       {
         "name": "id",
-        "type": "INT",
-        "autoIncrement": true
+        "type": "serial"
       },
       {
         "name": "k",
-        "type": "INT"
+        "type": "integer"
       },
       {
         "name": "c",
-        "type": "CHAR(120)"
+        "type": "char(120)"
       },
       {
         "name": "pad",
-        "type": "CHAR(60)"
+        "type": "char(60)"
       }
     ]
   }

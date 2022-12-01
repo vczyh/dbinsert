@@ -3,22 +3,25 @@ package relational
 import (
 	"fmt"
 	"github.com/vczyh/dbinsert/generator"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 type FieldType uint8
 
 const (
-	FieldTypeInt = iota
+	FieldTypeInt8 = iota
+	FieldTypeInt16
+	FieldTypeInt24
+	FieldTypeInt32
+	FieldTypeInt64
 	FieldTypeChar
+	FieldTypeVarChar
+	FieldTypeText
 )
 
 func (ft FieldType) String() string {
 	switch ft {
-	case FieldTypeInt:
-		return "INT"
+	case FieldTypeInt8:
+		return "INT8"
 	case FieldTypeChar:
 		return "CHAR"
 	default:
@@ -38,33 +41,22 @@ type Field struct {
 	generator     generator.Generator
 }
 
-func NewField(name, typeName string, autoIncrement bool) (*Field, error) {
-	tn := strings.ToUpper(typeName)
+func NewField(dialect Dialect, name, typeName string, autoIncrement bool) (*Field, error) {
+	field := &Field{
+		Name:     name,
+		TypeName: typeName,
+	}
+	filedDesc, err := DialectParsers[dialect].FieldDesc(field.TypeName)
+	if err != nil {
+		return nil, err
+	}
+	field.fieldType = filedDesc.FieldType
+	field.len = filedDesc.Len
+	field.autoIncrement = filedDesc.IsAutoIncreased
 
-	field := new(Field)
-	field.Name = name
-	field.TypeName = typeName
-	field.autoIncrement = autoIncrement
-
-	switch {
-	case tn == "INT":
-		field.fieldType = FieldTypeInt
-
-	case strings.HasPrefix(tn, "CHAR"):
-		field.fieldType = FieldTypeChar
-		pattern := regexp.MustCompile(`(\d+)`)
-		lens := pattern.FindAllStringSubmatch(tn, -1)
-		if len(lens) != 1 {
-			return nil, fmt.Errorf("unsupported type: %s", tn)
-		}
-		len, err := strconv.Atoi(lens[0][1])
-		if err != nil {
-			return nil, err
-		}
-		field.len = len
-
-	default:
-		return nil, fmt.Errorf("unsupported type: %s", name)
+	switch dialect {
+	case DialectMysql:
+		field.autoIncrement = autoIncrement
 	}
 
 	if err := field.defaultGenerator(); err != nil {
@@ -73,8 +65,8 @@ func NewField(name, typeName string, autoIncrement bool) (*Field, error) {
 	return field, nil
 }
 
-func MustNewField(name, typeName string) *Field {
-	field, err := NewField(name, typeName, false)
+func MustNewField(dialect Dialect, name, typeName string) *Field {
+	field, err := NewField(dialect, name, typeName, false)
 	if err != nil {
 		panic(err)
 	}
@@ -87,9 +79,9 @@ func (f *Field) GenerateData() interface{} {
 
 func (f *Field) defaultGenerator() error {
 	switch f.fieldType {
-	case FieldTypeInt:
+	case FieldTypeInt8, FieldTypeInt16, FieldTypeInt24, FieldTypeInt32, FieldTypeInt64:
 		f.generator = generator.NewInt8()
-	case FieldTypeChar:
+	case FieldTypeChar, FieldTypeVarChar:
 		g, err := generator.NewString(f.len)
 		if err != nil {
 			return err

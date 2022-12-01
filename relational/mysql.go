@@ -13,7 +13,7 @@ type MySQLConnectionManager struct {
 	password string
 }
 
-func NewConnectionManager(host, user, password string, opts ...ConnectionManagerOption) (*MySQLConnectionManager, error) {
+func NewMySQLConnectionManager(host, user, password string, opts ...MysqlConnectionManagerOption) (*MySQLConnectionManager, error) {
 	cm := &MySQLConnectionManager{
 		host:     host,
 		port:     3306,
@@ -53,20 +53,20 @@ func (cm *MySQLConnectionManager) open(database string) (*sql.DB, error) {
 	return db, nil
 }
 
-func WithConnectionPort(port int) ConnectionManagerOption {
-	return connectionManagerOptionFun(func(cm *MySQLConnectionManager) error {
+func WithConnectionPort(port int) MysqlConnectionManagerOption {
+	return mysqlConnectionManagerOptionFun(func(cm *MySQLConnectionManager) error {
 		cm.port = port
 		return nil
 	})
 }
 
-type ConnectionManagerOption interface {
+type MysqlConnectionManagerOption interface {
 	apply(manager *MySQLConnectionManager) error
 }
 
-type connectionManagerOptionFun func(manager *MySQLConnectionManager) error
+type mysqlConnectionManagerOptionFun func(manager *MySQLConnectionManager) error
 
-func (f connectionManagerOptionFun) apply(manager *MySQLConnectionManager) error {
+func (f mysqlConnectionManagerOptionFun) apply(manager *MySQLConnectionManager) error {
 	return f(manager)
 }
 
