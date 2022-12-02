@@ -24,5 +24,5 @@ var (
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&definitionFile, "definition", "", "definition file path")
+	rootCmd.PersistentFlags().StringVar(&definitionFile, "schema", "", "definition file path")
 }
