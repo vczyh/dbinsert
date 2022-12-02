@@ -1,9 +1,20 @@
-package relational
+package relation
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"os"
+)
+
+var (
+	//go:embed schema
+	schemaF embed.FS
+
+	schemaFiles = map[Dialect]map[string]string{
+		DialectMysql:    {"sysbench": "schema/sysbench_mysql.json"},
+		DialectPostgres: {"sysbench": "schema/sysbench_postgres.json"},
+	}
 )
 
 type Schema struct {
@@ -16,7 +27,7 @@ type Schema struct {
 }
 
 func ParseSchemaFromFile(dialect Dialect, file string, opts ...SchemaOption) (*Schema, error) {
-	tables, err := readSchemaTablesFromFile(file)
+	tables, err := readSchemaTablesFromFileOrTemplate(dialect, file)
 	if err != nil {
 		return nil, err
 	}
@@ -144,10 +155,20 @@ func (sf *SchemaField) Clone() *SchemaField {
 	}
 }
 
-func readSchemaTablesFromFile(file string) (schemas []*SchemaTable, err error) {
-	b, err := os.ReadFile(file)
-	if err != nil {
-		return nil, err
+func readSchemaTablesFromFileOrTemplate(dialect Dialect, name string) (schemas []*SchemaTable, err error) {
+	var b []byte
+	switch name {
+	case "", "sysbench":
+		file := schemaFiles[dialect]["sysbench"]
+		b, err = schemaF.ReadFile(file)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		b, err = os.ReadFile(name)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return schemas, json.Unmarshal(b, &schemas)
 }

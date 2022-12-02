@@ -21,7 +21,6 @@ func Execute() {
 
 var (
 	definitionFile string
-	tableSize      int
 )
 
 func init() {

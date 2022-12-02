@@ -1,4 +1,4 @@
-package relational
+package relation
 
 import (
 	"time"

@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"github.com/spf13/cobra"
-	"github.com/vczyh/dbinsert/relational"
+	"github.com/vczyh/dbinsert/relation"
 	"time"
 )
 
@@ -17,7 +17,7 @@ var postgresCmd = &cobra.Command{
 }
 
 var (
-	postgresCnf = new(relational.PostgresConfig)
+	postgresCnf = new(relation.PostgresConfig)
 )
 
 func init() {
@@ -27,8 +27,8 @@ func init() {
 	postgresCmd.Flags().IntVar(&postgresCnf.Port, "port", 3306, "mysql port")
 	postgresCmd.Flags().StringVar(&postgresCnf.Username, "username", "", "mysql username")
 	postgresCmd.Flags().StringVar(&postgresCnf.Password, "password", "", "mysql password")
-	postgresCmd.Flags().BoolVar(&postgresCnf.CreateDatabase, "create-database", false, "auto create database if not exist")
-	postgresCmd.Flags().BoolVar(&postgresCnf.CreateTable, "create-table", false, "auto create table if not exist")
+	postgresCmd.Flags().BoolVar(&postgresCnf.CreateDatabase, "create-databases", false, "auto create database if not exist")
+	postgresCmd.Flags().BoolVar(&postgresCnf.CreateTable, "create-tables", false, "auto create table if not exist")
 	postgresCmd.Flags().DurationVar(&postgresCnf.Timeout, "timeout", 10*time.Hour, "timeout")
 	postgresCmd.Flags().IntVar(&postgresCnf.TableSize, "table-size", 0, "table size")
 	postgresCmd.Flags().IntVar(&postgresCnf.DatabaseRepeat, "db-repeat", 0, "number of times the database is repeatedly created")
@@ -36,7 +36,7 @@ func init() {
 
 func StartPostgres() error {
 	postgresCnf.SchemaFile = definitionFile
-	manager, err := relational.CreateManagerForPostgres(postgresCnf)
+	manager, err := relation.CreateManagerForPostgres(postgresCnf)
 	if err != nil {
 		return err
 	}
