@@ -2,9 +2,9 @@
 
 - 根据字段类型自动生成数据
 - 快速批量插入
-- 通过 `Schmea` 自定义表结构
+- 通过 `schmea` 自定义表结构
 - 支持库拷贝，实现快速生成多个库
-- 内置多种 `Schema`，方便快速插入
+- 内置多种 `schema`，方便快速插入
 
 ## Support
 
@@ -13,7 +13,8 @@
 
 ## Schema
 
-`Schema` 定义了表结构，不同的数据库会有不同，但对于关系数据库大体相同，可以使用 `--schema` 指定内置 `Schema` 或者自定义 `Schema`。
+`schema` 定义了表结构，不同的数据库会有不同，但对于关系数据库大体相同，可以使用 `--schema` 指定内置 `schema`
+或者自定义 `schema`。
 
 ## MySQL
 
@@ -50,7 +51,7 @@
 ]
 ```
 
-### 内置 Schema
+### 内置 schema
 
 - [`sysbench`](./relation/schema/sysbench_mysql.json)
 
@@ -68,9 +69,9 @@ dbinsert mysql \
 
 ### Flags
 
-| 名称                   | 默认                                                | 说明                                         |
-|----------------------| --------------------------------------------------- |--------------------------------------------|
-| `--schema`           | [`sysbench`](./relation/schema/sysbench_mysql.json) | `Schema` 内置模板或者文件                          |
+| 名称                   | 默认                                                  | 说明                                         |
+|----------------------|-----------------------------------------------------|--------------------------------------------|
+| `--schema`           | [`sysbench`](./relation/schema/sysbench_mysql.json) | 内置或者自定义 `schema`                           |
 | `--host`             | `127.0.0.1`                                         | 域名或IP                                      |
 | `--port`             | `3306`                                              | 端口                                         |
 | `--username`         | `root`                                              | 用户                                         |
@@ -83,7 +84,7 @@ dbinsert mysql \
 
 ## PostgreSQL
 
-### PostgreSQL Schema
+### PostgreSQL schema
 
 ```json5
 [
@@ -131,9 +132,9 @@ dbinsert postgres \
 
 ### Flags
 
-| 名称                   | 默认                                                   | 说明                                         |
-|----------------------| ------------------------------------------------------ |--------------------------------------------|
-| `--schema`           | [`sysbench`](./relation/schema/sysbench_postgres.json) | `Schema` 内置模板或者文件                          |
+| 名称                   | 默认                                                     | 说明                                         |
+|----------------------|--------------------------------------------------------|--------------------------------------------|
+| `--schema`           | [`sysbench`](./relation/schema/sysbench_postgres.json) | 内置或者自定义 `schema`                           |
 | `--host`             | `127.0.0.1`                                            | 域名或IP                                      |
 | `--port`             | `5432`                                                 | 端口                                         |
 | `--username`         | `""`                                                   | 用户                                         |
