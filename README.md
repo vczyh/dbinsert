@@ -11,6 +11,12 @@
 - [MySQL](#MySQL)
 - [PostgreSQL](#PostgreSQL)
 
+## Install
+
+```shell
+go install github.com/vczyh/dbinsert@latest
+```
+
 ## Schema
 
 `schema` 定义了表结构，不同的数据库会有不同，但对于关系数据库大体相同，可以使用 `--schema` 指定内置或者自定义 `schema`。
