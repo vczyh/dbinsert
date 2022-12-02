@@ -63,17 +63,18 @@ dbinsert mysql \
 
 ### Flags
 
-| 名称  | 说明                                         |
-|-----|--------------------------------------------|
-| `--host`    | 域名或IP                                      |
-|  `--port`   | 端口                                         |
-|  `--username`   | 用户                                         |
-|     `--password`          | 密码                                         |
-|   `--create-databases`            | 创建库如果不存在                                   |
-|           `--create-tables`                      | 创建表如果不存在                                   |
-|      `--table-size`         | 表记录条数，优先级高于 `Schema` 中 `size`              |
-|    `--timeout`                       | 超时时间，`3m` 表示3分钟结束运行                        |
-|         `--db-repeat`                            | 数据库重复次数，会生成多个库 [`dbinsert_1`，`dbinsert_2`] |
+| 名称                 | 默认                                                | 说明                                                      |
+| -------------------- | --------------------------------------------------- | --------------------------------------------------------- |
+| `--definition`       | [`sysbench`](./relation/schema/sysbench_mysql.json) | `Schema` 文件                                             |
+| `--host`             | `127.0.0.1`                                         | 域名或IP                                                  |
+| `--port`             | `3306`                                              | 端口                                                      |
+| `--username`         | `root`                                              | 用户                                                      |
+| `--password`         | `""`                                                | 密码                                                      |
+| `--create-databases` | `false`                                             | 创建库如果不存在                                          |
+| `--create-tables`    | `false`                                             | 创建表如果不存在                                          |
+| `--table-size`       | `0`                                                 | 表记录条数，覆盖 `Schema` 中 `size`，`0` 不生效           |
+| `--timeout`          | `10h`                                               | 超时时间，`3m` 表示3分钟结束运行                          |
+| `--db-repeat`        | `0`                                                 | 数据库重复次数，会生成多个库 [`dbinsert_1`，`dbinsert_2`] |
 
 ## PostgreSQL
 
@@ -106,7 +107,6 @@ dbinsert mysql \
   }
 ]
 ```
-### Usage
 
 ### Usage
 
@@ -122,15 +122,16 @@ dbinsert postgres \
 
 ### Flags
 
-| 名称  | 说明                                         |
-|-----|--------------------------------------------|
-| `--host`    | 域名或IP                                      |
-|  `--port`   | 端口                                         |
-|  `--username`   | 用户                                         |
-|     `--password`          | 密码                                         |
-|   `--create-databases`            | 创建库如果不存在                                   |
-|           `--create-tables`                      | 创建表如果不存在                                   |
-|      `--table-size`         | 表记录条数，优先级高于 `Schema` 中 `size`              |
-|    `--timeout`                       | 超时时间，`3m` 表示3分钟结束运行                        |
-|         `--db-repeat`                            | 数据库重复次数，会生成多个库 [`dbinsert_1`，`dbinsert_2`] |
+| 名称                 | 默认                                                | 说明                                                      |
+| -------------------- | --------------------------------------------------- | --------------------------------------------------------- |
+| `--definition`       | [`sysbench`](./relation/schema/sysbench_mysql.json) | `Schema` 文件                                             |
+| `--host`             | `127.0.0.1`                                         | 域名或IP                                                  |
+| `--port`             | `5432`                                              | 端口                                                      |
+| `--username`         | `""`                                                | 用户                                                      |
+| `--password`         | `""`                                                | 密码                                                      |
+| `--create-databases` | `false`                                             | 创建库如果不存在                                          |
+| `--create-tables`    | `false`                                             | 创建表如果不存在                                          |
+| `--table-size`       | `0`                                                 | 表记录条数，覆盖 `Schema` 中 `size`，`0` 不生效           |
+| `--timeout`          | `10h`                                               | 超时时间，`3m` 表示3分钟结束运行                          |
+| `--db-repeat`        | `0`                                                 | 数据库重复次数，会生成多个库 [`dbinsert_1`，`dbinsert_2`] |
 
