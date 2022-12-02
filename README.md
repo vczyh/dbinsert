@@ -53,10 +53,10 @@
 
 ```shell
 dbinsert mysql \
-  --host 100.100.1.194 \ 
+  --host x.x.x.x \ 
   --port 3306 \
-  --username cloudos \
-  --password Zggyy2019! \
+  --user xxx  \
+  --password xxx \
   --create-databases \
   --create-tables
 ```
@@ -114,8 +114,8 @@ dbinsert mysql \
 dbinsert postgres \
   --host 100.100.1.194 \ 
   --port 3306 \
-  --username cloudos \
-  --password Zggyy2019! \
+  --user xxx \
+  --password xxx \
   --create-databases \
   --create-tables
 ```

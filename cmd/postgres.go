@@ -25,7 +25,7 @@ func init() {
 
 	postgresCmd.Flags().StringVar(&postgresCnf.Host, "host", "127.0.0.1", "mysql host")
 	postgresCmd.Flags().IntVar(&postgresCnf.Port, "port", 3306, "mysql port")
-	postgresCmd.Flags().StringVar(&postgresCnf.Username, "username", "", "mysql username")
+	postgresCmd.Flags().StringVar(&postgresCnf.Username, "user", "", "mysql username")
 	postgresCmd.Flags().StringVar(&postgresCnf.Password, "password", "", "mysql password")
 	postgresCmd.Flags().BoolVar(&postgresCnf.CreateDatabase, "create-databases", false, "auto create database if not exist")
 	postgresCmd.Flags().BoolVar(&postgresCnf.CreateTable, "create-tables", false, "auto create table if not exist")

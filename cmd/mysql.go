@@ -25,7 +25,7 @@ func init() {
 
 	mysqlCmd.Flags().StringVar(&mysqlCnf.Host, "host", "127.0.0.1", "mysql host")
 	mysqlCmd.Flags().IntVar(&mysqlCnf.Port, "port", 3306, "mysql port")
-	mysqlCmd.Flags().StringVar(&mysqlCnf.Username, "username", "", "mysql username")
+	mysqlCmd.Flags().StringVar(&mysqlCnf.Username, "user", "", "mysql username")
 	mysqlCmd.Flags().StringVar(&mysqlCnf.Password, "password", "", "mysql password")
 	mysqlCmd.Flags().BoolVar(&mysqlCnf.CreateDatabase, "create-databases", false, "auto create database if not exist")
 	mysqlCmd.Flags().BoolVar(&mysqlCnf.CreateTable, "create-tables", false, "auto create table if not exist")
