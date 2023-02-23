@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	_ "embed"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -12,7 +13,9 @@ var rootCmd = &cobra.Command{
 	Short: "A quick insert tool, support mysql, postgresql, redis.",
 }
 
-func Execute() {
+func Execute(aVersion string) {
+	version = aVersion
+
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
