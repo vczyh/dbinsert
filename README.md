@@ -1,10 +1,9 @@
 ## Features
 
-- 根据字段类型自动生成数据
 - 快速批量插入
-- 通过 `schmea` 自定义表结构
-- 支持库拷贝，实现快速生成多个库
-- 内置多种 `schema`，方便快速插入
+- 通过 `schmea` 自定义表结构，内置多种 `schema`
+- 根据字段类型自动生成数据
+- 快速生成多个库
 
 ## Support
 
@@ -14,6 +13,7 @@
 
 ## Install
 
+从 [Releases](https://github.com/vczyh/dbinsert/releases) 下载，或者如果有 `go` 环境：
 ```shell
 go install github.com/vczyh/dbinsert@latest
 ```
