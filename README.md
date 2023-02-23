@@ -10,6 +10,7 @@
 
 - [MySQL](#MySQL)
 - [PostgreSQL](#PostgreSQL)
+- [Redis](#Redis)
 
 ## Install
 
@@ -19,7 +20,13 @@ go install github.com/vczyh/dbinsert@latest
 
 ## Schema
 
-`schema` 定义了表结构，不同的数据库会有不同，但对于关系数据库大体相同，可以使用 `--schema` 指定内置或者自定义 `schema`。
+`schema` 定义了表结构，不同的数据库会有不同，但对于关系数据库大体相同，可以使用 `--schema` 指定内置或者自定义 `schema`
+，如果不指定则使用默认 `schema`。
+
+支持 `schema` 的数据库：
+
+- MySQL
+- PostgreSQL
 
 ## MySQL
 
@@ -150,3 +157,40 @@ dbinsert postgres \
 | `--timeout`          | `10h`                                                  | 超时时间，`3m` 表示3分钟结束运行                        |
 | `--db-repeat`        | `0`                                                    | 数据库重复次数，会生成多个库 [`dbinsert_1`，`dbinsert_2`] |
 
+## Redis
+
+### Usage
+
+```shell
+dbinsert redis \
+  --host 127.0.0.1 \
+  --port 6379 \
+  --user xxx \
+  --password xxx \  
+  --key-count 10000 
+```
+
+支持集群：
+
+```shell
+dbinsert redis \
+  --cluster \
+  --addrs 100.100.5.222:6379 \
+  --user xxx \
+  --password xxx  \
+  --key-count 30000
+```
+
+### Flags
+
+| 名称          | 默认               | 支持类型  | 说明                  |
+|-------------|------------------|-------|---------------------|
+| `user`      | `default`        | 单点和集群 | 用户                  |
+| `password`  | `""`             | 单点和集群 | 密码                  |
+| `timeout`   | `10h`            | 单点和集群 | 超时时间，`3m` 表示3分钟结束运行 |
+| `key-count` | `0`              | 单点和集群 | 插入的记录数, `0` 代表无限    |
+| `value-len` | `50`             | 单点和集群 | `value` 字符串的长度      |
+| `--host`    | `127.0.0.1`      | 单点    | 域名或IP               |
+| `--port`    | `6379`           | 单点    | 端口                  |
+| `cluster`   | `false`          | 集群    | 开启集群模式              |
+| `addrs`     | `127.0.0.1:6379` | 集群    | 逗号分隔的集群地址列表         |
