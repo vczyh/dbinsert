@@ -5,7 +5,7 @@ release: $(verson)
 	@echo $(version) > VERSION
 	git tag $(version)
 	git add VERSION
-	git commit -m $(VERSION)
+	git commit -m $(version)
 
 beta: $(verson)
 	@echo "Beta Version: $(version)-beta"
