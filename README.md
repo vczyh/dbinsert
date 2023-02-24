@@ -175,7 +175,7 @@ dbinsert redis \
 ```shell
 dbinsert redis \
   --cluster \
-  --addrs 100.100.5.222:6379 \
+  --addrs 127.0.0.1:6379 \
   --user xxx \
   --password xxx  \
   --key-count 30000
