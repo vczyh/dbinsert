@@ -14,8 +14,13 @@
 ## Install
 
 从 [Releases](https://github.com/vczyh/dbinsert/releases) 下载，或者如果有 `go` 环境：
+
 ```shell
 go install github.com/vczyh/dbinsert@latest
+```
+
+```shell
+dbinsert version
 ```
 
 ## Schema
