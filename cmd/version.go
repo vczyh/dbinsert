@@ -27,6 +27,7 @@ var versionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Version: %s\n", version)
 		fmt.Printf("Git Commit: %s\n", commit)
+		fmt.Printf("Github: https://github.com/vczyh/dbinsert\n")
 	},
 }
 
