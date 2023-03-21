@@ -2,10 +2,13 @@ package redis
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"github.com/vczyh/dbinsert/generator"
 	"net"
+	"os"
 	"strconv"
 	"time"
 )
@@ -17,11 +20,16 @@ const (
 type Manager struct {
 	isCluster bool
 
-	user     string
-	password string
-	timeout  time.Duration
-	keyCount int
-	valueLen int
+	user       string
+	password   string
+	timeout    time.Duration
+	keyCount   int
+	valueLen   int
+	enableTLS  bool
+	caCert     string
+	skipVerify bool
+	cert       string
+	key        string
 
 	// Standalone or Master-slave
 	host string
@@ -32,6 +40,7 @@ type Manager struct {
 
 	rdb        *redis.Client
 	rdbCluster *redis.ClusterClient
+	tlsConfig  *tls.Config
 }
 
 func NewManager(host, user, password string, opts ...ManagerOption) (*Manager, error) {
@@ -76,6 +85,32 @@ func (m *Manager) close() {
 }
 
 func (m *Manager) prepare(ctx context.Context) error {
+	if m.enableTLS {
+		caCertBytes, err := os.ReadFile(m.caCert)
+		if err != nil {
+			return err
+		}
+		rootCertPool := x509.NewCertPool()
+		if ok := rootCertPool.AppendCertsFromPEM(caCertBytes); !ok {
+			return fmt.Errorf("fail to append PEM")
+		}
+
+		m.tlsConfig = &tls.Config{
+			MinVersion:         tls.VersionTLS12,
+			RootCAs:            rootCertPool,
+			InsecureSkipVerify: m.skipVerify,
+			//ServerName: "*",
+		}
+
+		if m.cert != "" && m.key != "" {
+			certKeyPair, err := tls.LoadX509KeyPair(m.cert, m.key)
+			if err != nil {
+				return err
+			}
+			m.tlsConfig.Certificates = []tls.Certificate{certKeyPair}
+		}
+	}
+
 	if m.isCluster {
 		m.rdbCluster = redis.NewClusterClient(&redis.ClusterOptions{
 			Addrs:                 m.addresses,
@@ -85,6 +120,7 @@ func (m *Manager) prepare(ctx context.Context) error {
 			WriteTimeout:          2 * time.Second,
 			ReadTimeout:           2 * time.Second,
 			ContextTimeoutEnabled: true,
+			TLSConfig:             m.tlsConfig,
 		})
 	} else {
 		m.rdb = redis.NewClient(&redis.Options{
@@ -95,12 +131,13 @@ func (m *Manager) prepare(ctx context.Context) error {
 			WriteTimeout:          2 * time.Second,
 			ReadTimeout:           2 * time.Second,
 			ContextTimeoutEnabled: true,
+			TLSConfig:             m.tlsConfig,
 		})
 	}
 
 	_, err := m.cmd().Ping(ctx).Result()
 	if err != nil {
-		return err
+		return fmt.Errorf("ping failed")
 	}
 
 	return nil
@@ -192,6 +229,41 @@ func WithManagerOptionIsCluster(isCluster bool) ManagerOption {
 func WithManagerOptionAddresses(addresses []string) ManagerOption {
 	return managerOptionFun(func(m *Manager) error {
 		m.addresses = addresses
+		return nil
+	})
+}
+
+func WithManagerOptionEnableTLS(enableTLS bool) ManagerOption {
+	return managerOptionFun(func(m *Manager) error {
+		m.enableTLS = enableTLS
+		return nil
+	})
+}
+
+func WithManagerOptionCaCert(caCert string) ManagerOption {
+	return managerOptionFun(func(m *Manager) error {
+		m.caCert = caCert
+		return nil
+	})
+}
+
+func WithManagerOptionSkipVerify(skipVerify bool) ManagerOption {
+	return managerOptionFun(func(m *Manager) error {
+		m.skipVerify = skipVerify
+		return nil
+	})
+}
+
+func WithManagerOptionCert(cert string) ManagerOption {
+	return managerOptionFun(func(m *Manager) error {
+		m.cert = cert
+		return nil
+	})
+}
+
+func WithManagerOptionKey(key string) ManagerOption {
+	return managerOptionFun(func(m *Manager) error {
+		m.key = key
 		return nil
 	})
 }

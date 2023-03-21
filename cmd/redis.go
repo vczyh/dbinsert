@@ -28,6 +28,11 @@ func init() {
 	redisCmd.Flags().DurationVar(&redisCnf.Timeout, "timeout", 10*time.Hour, "timeout")
 	redisCmd.Flags().IntVar(&redisCnf.KeyCount, "key-count", 0, "key count")
 	redisCmd.Flags().IntVar(&redisCnf.ValueLen, "value-len", 50, "value string length")
+	redisCmd.Flags().BoolVar(&redisCnf.EnableTLS, "tls", false, "enable tls")
+	redisCmd.Flags().StringVar(&redisCnf.CaCert, "cacert", "", "CA cert file")
+	redisCmd.Flags().BoolVar(&redisCnf.SkipVerify, "skip-verify", false, "whether a client verifies the server's certificate chain and host name")
+	redisCmd.Flags().StringVar(&redisCnf.Cert, "cert", "", "cert file")
+	redisCmd.Flags().StringVar(&redisCnf.Key, "key", "", "key file")
 
 	// Standalone or Master-slave
 	redisCmd.Flags().StringVar(&redisCnf.Host, "host", "127.0.0.1", "redis host")
